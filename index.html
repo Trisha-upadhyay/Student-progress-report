@@ -1,0 +1,1829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student AI Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --bg-secondary: #0d1528;
+      --surface: rgba(12, 20, 38, 0.68);
+      --surface-strong: rgba(15, 26, 49, 0.84);
+      --surface-soft: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(109, 99, 255, 0.38);
+      --text: #f4f7ff;
+      --muted: #9aa8c7;
+      --accent: #7c5cff;
+      --accent-2: #35d8ff;
+      --accent-3: #f857a6;
+      --accent-4: #6effb6;
+      --track: rgba(255, 255, 255, 0.08);
+      --success: #48d597;
+      --warning: #ffbe4d;
+      --danger: #ff6c8d;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      --ring-fill: 0deg;
+      --page-width: min(1120px, calc(100% - 24px));
+      --transition: 240ms ease;
+    }
+
+    body.light {
+      color-scheme: light;
+      --bg: #eef5ff;
+      --bg-secondary: #f8faff;
+      --surface: rgba(255, 255, 255, 0.74);
+      --surface-strong: rgba(255, 255, 255, 0.9);
+      --surface-soft: rgba(34, 50, 84, 0.05);
+      --border: rgba(77, 98, 148, 0.15);
+      --border-glow: rgba(124, 92, 255, 0.24);
+      --text: #17233b;
+      --muted: #66738f;
+      --track: rgba(122, 134, 168, 0.18);
+      --shadow: 0 18px 50px rgba(55, 75, 125, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(124, 92, 255, 0.24), transparent 24%),
+        radial-gradient(circle at 82% 18%, rgba(53, 216, 255, 0.18), transparent 22%),
+        radial-gradient(circle at 50% 90%, rgba(248, 87, 166, 0.14), transparent 24%),
+        linear-gradient(135deg, var(--bg), var(--bg-secondary));
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+      position: relative;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      filter: blur(14px);
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 0;
+      animation: blobFloat 16s ease-in-out infinite;
+    }
+
+    body::before {
+      left: -100px;
+      top: 10%;
+      background: rgba(124, 92, 255, 0.18);
+    }
+
+    body::after {
+      right: -80px;
+      top: 55%;
+      background: rgba(53, 216, 255, 0.16);
+      animation-delay: -7s;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      width: var(--page-width);
+      margin: 0 auto;
+      padding: 18px 0 32px;
+    }
+
+    .topbar,
+    .hero-panel,
+    .main-grid,
+    .form-grid,
+    .action-row,
+    .result-meta,
+    .mini-stats,
+    .ring-row,
+    .slider-meta {
+      display: grid;
+      gap: 16px;
+    }
+
+    .glass-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      transition:
+        transform var(--transition),
+        border-color var(--transition),
+        background var(--transition),
+        box-shadow var(--transition);
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .glass-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 45%, rgba(124, 92, 255, 0.08));
+      pointer-events: none;
+    }
+
+    .glass-card:hover {
+      border-color: var(--border-glow);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.24);
+    }
+
+    .topbar {
+      grid-template-columns: 1fr;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .brand-row,
+    .brand,
+    .brand-chip,
+    .panel-tag,
+    .panel-actions,
+    .input-title,
+    .slider-label,
+    .tooltip-trigger,
+    .theme-toggle,
+    .action-button,
+    .prediction-button,
+    .badge,
+    .result-header,
+    .risk-line,
+    .message-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-row {
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      box-shadow: 0 14px 28px rgba(124, 92, 255, 0.3);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1,
+    .hero-copy h2,
+    .section-header h3,
+    .result-score,
+    .grade-badge strong,
+    .stat-value {
+      margin: 0;
+    }
+
+    .brand-copy h1 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-copy p,
+    .hero-copy p,
+    .helper-text,
+    .section-header p,
+    .slider-note,
+    .stat-label,
+    .result-kicker,
+    .result-subtext,
+    .message-copy p,
+    .tooltip-bubble,
+    .empty-state {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .hero-panel {
+      grid-template-columns: 1fr;
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero-top {
+      display: grid;
+      gap: 12px;
+    }
+
+    .brand-chip,
+    .panel-tag,
+    .badge,
+    .theme-toggle,
+    .action-button {
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .brand-chip {
+      width: fit-content;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+    }
+
+    .hero-copy {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-copy h2 {
+      font-size: clamp(1.8rem, 5vw, 3rem);
+      line-height: 1.03;
+      letter-spacing: -0.05em;
+      max-width: 13ch;
+    }
+
+    .hero-copy p {
+      max-width: 62ch;
+      line-height: 1.65;
+      font-size: 0.96rem;
+    }
+
+    .mini-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mini-stat {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      min-width: 0;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 0.87rem;
+      line-height: 1.45;
+    }
+
+    .theme-toggle {
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+      transition: transform var(--transition), background var(--transition), border-color var(--transition);
+    }
+
+    .theme-toggle:hover,
+    .action-button:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: var(--border-glow);
+    }
+
+    .theme-toggle .toggle-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.24), rgba(53, 216, 255, 0.24));
+    }
+
+    .main-grid {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .input-panel,
+    .side-panel {
+      padding: 22px;
+    }
+
+    .section-header {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .panel-tag {
+      width: fit-content;
+      color: var(--accent-2);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .section-header h3 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .section-header p {
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .slider-card {
+      padding: 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+      transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .slider-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-glow);
+      box-shadow: 0 14px 28px rgba(10, 18, 36, 0.2);
+    }
+
+    .slider-meta {
+      grid-template-columns: 1fr auto;
+      align-items: start;
+    }
+
+    .slider-label {
+      align-items: flex-start;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .field-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: white;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.9), rgba(53, 216, 255, 0.9));
+      box-shadow: 0 10px 20px rgba(124, 92, 255, 0.2);
+    }
+
+    .input-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-flex;
+    }
+
+    .tooltip-trigger {
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      cursor: help;
+      font-size: 0.72rem;
+      transition: transform var(--transition), color var(--transition), border-color var(--transition);
+    }
+
+    .tooltip:hover .tooltip-trigger,
+    .tooltip-trigger:focus-visible {
+      color: var(--text);
+      transform: scale(1.06);
+      border-color: var(--border-glow);
+      outline: none;
+    }
+
+    .tooltip-bubble {
+      position: absolute;
+      left: 0;
+      top: calc(100% + 10px);
+      width: min(220px, 75vw);
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-strong);
+      font-size: 0.78rem;
+      line-height: 1.45;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(6px);
+      transition: opacity var(--transition), transform var(--transition), visibility var(--transition);
+      z-index: 4;
+      box-shadow: var(--shadow);
+    }
+
+    .tooltip:hover .tooltip-bubble,
+    .tooltip-trigger:focus-visible + .tooltip-bubble {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .slider-note {
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .value-badge {
+      min-width: 86px;
+      text-align: center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      font-weight: 800;
+      font-size: 0.9rem;
+      transition: transform var(--transition), border-color var(--transition);
+    }
+
+    .value-badge.pop {
+      animation: valuePulse 260ms ease;
+    }
+
+    .slider-wrap {
+      display: grid;
+      gap: 8px;
+    }
+
+    .range-scale {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.76rem;
+      color: var(--muted);
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      outline: none;
+      background:
+        linear-gradient(90deg, var(--accent), var(--accent-2)) 0/var(--fill, 0%) 100% no-repeat,
+        var(--track);
+      cursor: pointer;
+      transition: filter var(--transition), transform var(--transition);
+    }
+
+    .slider:hover {
+      filter: brightness(1.06);
+    }
+
+    .slider:active {
+      transform: scaleY(1.08);
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.95);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 6px rgba(124, 92, 255, 0.14), 0 8px 18px rgba(10, 18, 36, 0.25);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 0 8px rgba(124, 92, 255, 0.16), 0 8px 18px rgba(10, 18, 36, 0.25);
+    }
+
+    .slider::-moz-range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--track);
+    }
+
+    .slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.95);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 0 6px rgba(124, 92, 255, 0.14), 0 8px 18px rgba(10, 18, 36, 0.25);
+    }
+
+    .action-row {
+      grid-template-columns: 1fr;
+      margin-top: 4px;
+    }
+
+    .prediction-button,
+    .action-button {
+      position: relative;
+      justify-content: center;
+      width: 100%;
+      min-height: 52px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+    }
+
+    .prediction-button {
+      color: white;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      box-shadow: 0 18px 32px rgba(124, 92, 255, 0.28);
+    }
+
+    .prediction-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 22px 34px rgba(124, 92, 255, 0.32);
+      filter: saturate(1.05);
+    }
+
+    .prediction-button:active,
+    .action-button:active {
+      transform: scale(0.985);
+    }
+
+    .prediction-button:disabled {
+      opacity: 0.86;
+      cursor: wait;
+    }
+
+    .prediction-button::before,
+    .action-button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+      transform: translateX(-120%);
+      transition: transform 600ms ease;
+    }
+
+    .prediction-button:hover::before,
+    .action-button:hover::before {
+      transform: translateX(120%);
+    }
+
+    .action-button {
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .button-content,
+    .button-loading {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .button-loading {
+      display: none;
+    }
+
+    .prediction-button.loading .button-content {
+      display: none;
+    }
+
+    .prediction-button.loading .button-loading {
+      display: inline-flex;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.28);
+      border-top-color: white;
+      animation: spin 800ms linear infinite;
+    }
+
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(255, 255, 255, 0.35);
+      animation: ripple 620ms ease-out forwards;
+    }
+
+    .helper-text {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-top: 4px;
+    }
+
+    .side-panel {
+      display: grid;
+      gap: 16px;
+      align-self: start;
+    }
+
+    .result-card {
+      display: grid;
+      gap: 16px;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      transform: translateY(10px);
+      opacity: 0.94;
+      transition: transform 360ms ease, opacity 360ms ease, border-color var(--transition);
+    }
+
+    .result-card.show {
+      transform: translateY(0);
+      opacity: 1;
+      animation: cardIn 420ms ease;
+    }
+
+    .result-card.loading .loading-skeleton {
+      display: grid;
+    }
+
+    .result-card.loading .result-live {
+      display: none;
+    }
+
+    .loading-skeleton {
+      display: none;
+      gap: 12px;
+    }
+
+    .skeleton-line,
+    .skeleton-circle {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+      background-size: 200% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+
+    .skeleton-line {
+      height: 14px;
+      border-radius: 999px;
+    }
+
+    .skeleton-circle {
+      width: 94px;
+      height: 94px;
+      border-radius: 50%;
+    }
+
+    .result-live {
+      display: grid;
+      gap: 16px;
+    }
+
+    .result-header {
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .result-kicker {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-2);
+    }
+
+    .result-score {
+      font-size: clamp(2.1rem, 7vw, 3.4rem);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+    }
+
+    .result-subtext {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .grade-badge,
+    .risk-badge {
+      padding: 10px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      min-width: 96px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .grade-badge span,
+    .risk-badge span {
+      display: block;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .grade-badge strong,
+    .risk-badge strong {
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .grade-a,
+    .risk-low {
+      color: var(--success);
+      border-color: rgba(72, 213, 151, 0.24);
+      background: rgba(72, 213, 151, 0.1);
+    }
+
+    .grade-b,
+    .risk-medium {
+      color: var(--warning);
+      border-color: rgba(255, 190, 77, 0.24);
+      background: rgba(255, 190, 77, 0.12);
+    }
+
+    .grade-c,
+    .risk-high {
+      color: var(--danger);
+      border-color: rgba(255, 108, 141, 0.24);
+      background: rgba(255, 108, 141, 0.12);
+    }
+
+    .ring-row {
+      grid-template-columns: 100px 1fr;
+      align-items: center;
+    }
+
+    .progress-ring {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background:
+        conic-gradient(from 180deg, var(--accent) 0deg, var(--accent-2) var(--ring-fill), rgba(255, 255, 255, 0.08) var(--ring-fill), rgba(255, 255, 255, 0.08) 360deg);
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.18);
+      transition: background 800ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-ring::before {
+      content: "";
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      display: block;
+      position: absolute;
+    }
+
+    .ring-value {
+      position: relative;
+      z-index: 1;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .progress-track {
+      height: 10px;
+      border-radius: 999px;
+      background: var(--track);
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      box-shadow: 0 10px 20px rgba(124, 92, 255, 0.24);
+      transition: width 800ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .progress-copy {
+      display: grid;
+      gap: 10px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .result-meta {
+      grid-template-columns: 1fr;
+    }
+
+    .info-card {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .info-card span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .info-card strong {
+      display: block;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .message-row {
+      align-items: flex-start;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .message-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: white;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, var(--accent-3), var(--accent));
+    }
+
+    .message-copy strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.95rem;
+    }
+
+    .message-copy p {
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .insight-panel {
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      display: grid;
+      gap: 14px;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .insight-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .insight-item strong {
+      color: var(--text);
+    }
+
+    .empty-state {
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .result {
+      display: none;
+    }
+
+    @keyframes blobFloat {
+      0%, 100% {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      50% {
+        transform: translate3d(20px, -22px, 0) scale(1.06);
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes shimmer {
+      from {
+        background-position: 200% 0;
+      }
+      to {
+        background-position: -200% 0;
+      }
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes valuePulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.06);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes ripple {
+      to {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(4);
+      }
+    }
+
+    @media (min-width: 720px) {
+      .app-shell {
+        padding-top: 24px;
+      }
+
+      .topbar {
+        margin-bottom: 22px;
+      }
+
+      .hero-panel {
+        padding: 24px;
+      }
+
+      .action-row {
+        grid-template-columns: 1.5fr 1fr;
+      }
+
+      .result-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 980px) {
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .main-grid {
+        grid-template-columns: minmax(0, 1.08fr) minmax(330px, 0.92fr);
+      }
+
+      .mini-stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .side-panel {
+        position: sticky;
+        top: 18px;
+      }
+    }
+
+    @media (max-width: 719px) {
+      .app-shell {
+        width: min(100% - 18px, 1120px);
+      }
+
+      .brand-row {
+        align-items: stretch;
+      }
+
+      .theme-toggle {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .mini-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .slider-meta {
+        grid-template-columns: 1fr;
+      }
+
+      .value-badge {
+        width: fit-content;
+      }
+
+      .ring-row {
+        grid-template-columns: 1fr;
+        justify-items: start;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body class="dark">
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand-row">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="brand-copy">
+            <h1>Student AI Dashboard</h1>
+            <p>Modern performance intelligence with cleaner layout and real-time feedback.</p>
+          </div>
+        </div>
+
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
+          <span class="toggle-icon"><i class="fa-solid fa-moon"></i></span>
+          <span id="themeLabel">Dark mode</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="hero-panel glass-card tilt-card">
+      <div class="hero-top">
+        <div class="brand-chip">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          AI-Powered Academic Forecast
+        </div>
+
+        <div class="hero-copy">
+          <h2>Predict student performance in a clean, futuristic dashboard.</h2>
+          <p>
+            Adjust attendance, study effort, assignment quality, and LMS activity to generate a fast prediction.
+            The layout stays compact and readable across mobile, tablet, and desktop.
+          </p>
+        </div>
+      </div>
+
+      <div class="mini-stats">
+        <div class="mini-stat">
+          <strong class="stat-value">Live sliders</strong>
+          <p class="stat-label">Animated values update instantly while you explore scenarios.</p>
+        </div>
+        <div class="mini-stat">
+          <strong class="stat-value">Neat spacing</strong>
+          <p class="stat-label">Compact cards, balanced gaps, and no overlapping components.</p>
+        </div>
+        <div class="mini-stat">
+          <strong class="stat-value">Saved inputs</strong>
+          <p class="stat-label">Your last values are remembered automatically with local storage.</p>
+        </div>
+        <div class="mini-stat">
+          <strong class="stat-value">Actionable result</strong>
+          <p class="stat-label">Get score, grade, risk, progress, and a motivational message.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <section class="input-panel glass-card tilt-card">
+        <div class="section-header">
+          <div class="panel-tag">
+            <i class="fa-solid fa-sliders"></i>
+            Input Controls
+          </div>
+          <h3>Student Performance Predictor</h3>
+          <p>Use the controls below to model a student's current learning profile without changing backend behavior.</p>
+        </div>
+
+        <div class="form-grid">
+          <div class="slider-card">
+            <div class="slider-meta">
+              <div class="slider-label">
+                <div class="field-icon" aria-hidden="true">
+                  <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div>
+                  <div class="input-title">
+                    Attendance
+                    <span class="tooltip">
+                      <button class="tooltip-trigger" type="button" aria-label="Attendance info">i</button>
+                      <span class="tooltip-bubble">Higher attendance usually means stronger consistency and better classroom engagement.</span>
+                    </span>
+                  </div>
+                  <p class="slider-note">Class participation percentage across recent sessions.</p>
+                </div>
+              </div>
+              <div class="value-badge" id="attendanceValue">75%</div>
+            </div>
+            <div class="slider-wrap">
+              <input class="slider" type="range" id="attendance" min="0" max="100" value="75">
+              <div class="range-scale">
+                <span>0%</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="slider-card">
+            <div class="slider-meta">
+              <div class="slider-label">
+                <div class="field-icon" aria-hidden="true">
+                  <i class="fa-solid fa-book-open-reader"></i>
+                </div>
+                <div>
+                  <div class="input-title">
+                    Study Hours
+                    <span class="tooltip">
+                      <button class="tooltip-trigger" type="button" aria-label="Study hours info">i</button>
+                      <span class="tooltip-bubble">Daily study time indicates discipline and direct preparation effort outside class.</span>
+                    </span>
+                  </div>
+                  <p class="slider-note">Average number of hours spent studying per day.</p>
+                </div>
+              </div>
+              <div class="value-badge" id="studyValue">5 hrs</div>
+            </div>
+            <div class="slider-wrap">
+              <input class="slider" type="range" id="study" min="0" max="10" value="5">
+              <div class="range-scale">
+                <span>0 hrs</span>
+                <span>10 hrs</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="slider-card">
+            <div class="slider-meta">
+              <div class="slider-label">
+                <div class="field-icon" aria-hidden="true">
+                  <i class="fa-solid fa-file-pen"></i>
+                </div>
+                <div>
+                  <div class="input-title">
+                    Assignment Score
+                    <span class="tooltip">
+                      <button class="tooltip-trigger" type="button" aria-label="Assignment score info">i</button>
+                      <span class="tooltip-bubble">This reflects assignment quality and completion consistency across coursework.</span>
+                    </span>
+                  </div>
+                  <p class="slider-note">Average score achieved in submitted assignments.</p>
+                </div>
+              </div>
+              <div class="value-badge" id="assignValue">80%</div>
+            </div>
+            <div class="slider-wrap">
+              <input class="slider" type="range" id="assign" min="0" max="100" value="80">
+              <div class="range-scale">
+                <span>0%</span>
+                <span>100%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="slider-card">
+            <div class="slider-meta">
+              <div class="slider-label">
+                <div class="field-icon" aria-hidden="true">
+                  <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <div>
+                  <div class="input-title">
+                    LMS Logins
+                    <span class="tooltip">
+                      <button class="tooltip-trigger" type="button" aria-label="LMS logins info">i</button>
+                      <span class="tooltip-bubble">Frequent LMS visits suggest better engagement with course materials and announcements.</span>
+                    </span>
+                  </div>
+                  <p class="slider-note">Learning platform access frequency within the tracked period.</p>
+                </div>
+              </div>
+              <div class="value-badge" id="lmsValue">8 logins</div>
+            </div>
+            <div class="slider-wrap">
+              <input class="slider" type="range" id="lms" min="0" max="20" value="8">
+              <div class="range-scale">
+                <span>0</span>
+                <span>20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="prediction-button" id="predictButton" type="button" onclick="predict()">
+            <span class="button-content">
+              <i class="fa-solid fa-bolt"></i>
+              <span>Predict Performance</span>
+            </span>
+            <span class="button-loading">
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Fetching prediction...</span>
+            </span>
+          </button>
+
+          <button class="action-button" id="resetButton" type="button">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+
+        <p class="helper-text">Live values are saved automatically. Use reset to restore the default model inputs.</p>
+      </section>
+
+      <aside class="side-panel glass-card tilt-card">
+        <div class="section-header">
+          <div class="panel-tag">
+            <i class="fa-solid fa-chart-line"></i>
+            Prediction Result
+          </div>
+          <h3>Performance Overview</h3>
+          <p>Results appear here with animated progress, risk indicators, and concise guidance.</p>
+        </div>
+
+        <section class="result-card show" id="resultCard" aria-live="polite">
+          <div class="loading-skeleton">
+            <div class="skeleton-circle"></div>
+            <div class="skeleton-line" style="width: 60%;"></div>
+            <div class="skeleton-line" style="width: 90%;"></div>
+            <div class="skeleton-line" style="width: 74%;"></div>
+          </div>
+
+          <div class="result-live">
+            <div class="result-header">
+              <div>
+                <div class="result-kicker">Predicted Score</div>
+                <div class="result-score" id="scoreValue">--</div>
+                <p class="result-subtext" id="statusText">Run a prediction to view the student's performance outlook.</p>
+              </div>
+
+              <div class="risk-line">
+                <div class="grade-badge" id="gradeBadge">
+                  <span>Grade</span>
+                  <strong>--</strong>
+                </div>
+                <div class="risk-badge" id="riskBadge">
+                  <span>Risk</span>
+                  <strong>Waiting</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="ring-row">
+              <div class="progress-ring" id="progressRing">
+                <div class="ring-value" id="ringValue">0%</div>
+              </div>
+
+              <div class="progress-copy">
+                <div class="progress-header">
+                  <span>Performance progress</span>
+                  <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-track">
+                  <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p class="result-subtext">The ring and bar both animate to reflect the latest predicted performance score.</p>
+              </div>
+            </div>
+
+            <div class="result-meta">
+              <div class="info-card">
+                <span>Risk Level</span>
+                <strong id="riskText">Not available yet</strong>
+              </div>
+              <div class="info-card">
+                <span>Summary</span>
+                <strong id="summaryText">Waiting for model output.</strong>
+              </div>
+            </div>
+
+            <div class="message-row">
+              <div class="message-icon" aria-hidden="true">
+                <i class="fa-solid fa-sparkles"></i>
+              </div>
+              <div class="message-copy">
+                <strong id="motivationTitle">Momentum starts with one click.</strong>
+                <p id="motivationText">Adjust the sliders and generate a prediction to see personalized feedback.</p>
+              </div>
+            </div>
+
+            <div class="result" id="result"></div>
+          </div>
+        </section>
+
+        <section class="insight-panel">
+          <div class="section-header" style="margin-bottom: 0;">
+            <h3 style="font-size: 1rem;">Quick Insights</h3>
+            <p class="empty-state">A compact summary of the current input profile.</p>
+          </div>
+
+          <div class="insight-list">
+            <div class="insight-item">
+              <span>Attendance trend</span>
+              <strong id="attendanceInsight">Stable</strong>
+            </div>
+            <div class="insight-item">
+              <span>Study rhythm</span>
+              <strong id="studyInsight">Balanced</strong>
+            </div>
+            <div class="insight-item">
+              <span>Assignment health</span>
+              <strong id="assignInsight">Strong</strong>
+            </div>
+            <div class="insight-item">
+              <span>Platform engagement</span>
+              <strong id="lmsInsight">Active</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const sliderConfig = [
+      {
+        id: "attendance",
+        valueId: "attendanceValue",
+        suffix: "%",
+        storageKey: "student-dashboard-attendance",
+        insightId: "attendanceInsight",
+        defaultValue: 75
+      },
+      {
+        id: "study",
+        valueId: "studyValue",
+        suffix: " hrs",
+        storageKey: "student-dashboard-study",
+        insightId: "studyInsight",
+        defaultValue: 5
+      },
+      {
+        id: "assign",
+        valueId: "assignValue",
+        suffix: "%",
+        storageKey: "student-dashboard-assign",
+        insightId: "assignInsight",
+        defaultValue: 80
+      },
+      {
+        id: "lms",
+        valueId: "lmsValue",
+        suffix: " logins",
+        storageKey: "student-dashboard-lms",
+        insightId: "lmsInsight",
+        defaultValue: 8
+      }
+    ];
+
+    const predictButton = document.getElementById("predictButton");
+    const resetButton = document.getElementById("resetButton");
+    const resultCard = document.getElementById("resultCard");
+    const result = document.getElementById("result");
+    const scoreValue = document.getElementById("scoreValue");
+    const riskBadge = document.getElementById("riskBadge");
+    const riskText = document.getElementById("riskText");
+    const statusText = document.getElementById("statusText");
+    const summaryText = document.getElementById("summaryText");
+    const progressBar = document.getElementById("progressBar");
+    const progressPercent = document.getElementById("progressPercent");
+    const progressRing = document.getElementById("progressRing");
+    const ringValue = document.getElementById("ringValue");
+    const gradeBadge = document.getElementById("gradeBadge");
+    const motivationTitle = document.getElementById("motivationTitle");
+    const motivationText = document.getElementById("motivationText");
+    const themeToggle = document.getElementById("themeToggle");
+    const themeLabel = document.getElementById("themeLabel");
+
+    function formatValue(config, value) {
+      return value + config.suffix;
+    }
+
+    function getInsightText(config, numericValue) {
+      if (config.id === "attendance") {
+        if (numericValue >= 85) return "Excellent";
+        if (numericValue >= 60) return "Stable";
+        return "Needs focus";
+      }
+
+      if (config.id === "study") {
+        if (numericValue >= 7) return "Intense";
+        if (numericValue >= 4) return "Balanced";
+        return "Light";
+      }
+
+      if (config.id === "assign") {
+        if (numericValue >= 85) return "Strong";
+        if (numericValue >= 60) return "Fair";
+        return "Weak";
+      }
+
+      if (numericValue >= 12) return "Highly active";
+      if (numericValue >= 6) return "Active";
+      return "Low activity";
+    }
+
+    function updateSliderVisual(slider, valueLabel, config, shouldAnimate) {
+      const numericValue = Number(slider.value);
+      const min = Number(slider.min);
+      const max = Number(slider.max);
+      const percent = ((numericValue - min) / (max - min)) * 100;
+      const insight = document.getElementById(config.insightId);
+
+      slider.style.setProperty("--fill", percent + "%");
+      valueLabel.textContent = formatValue(config, slider.value);
+      insight.textContent = getInsightText(config, numericValue);
+
+      if (shouldAnimate) {
+        valueLabel.classList.remove("pop");
+        void valueLabel.offsetWidth;
+        valueLabel.classList.add("pop");
+      }
+    }
+
+    function saveInputs() {
+      sliderConfig.forEach((config) => {
+        const slider = document.getElementById(config.id);
+        localStorage.setItem(config.storageKey, slider.value);
+      });
+    }
+
+    function loadSavedInputs() {
+      sliderConfig.forEach((config) => {
+        const slider = document.getElementById(config.id);
+        const savedValue = localStorage.getItem(config.storageKey);
+
+        if (savedValue !== null) {
+          slider.value = savedValue;
+        } else {
+          slider.value = config.defaultValue;
+        }
+      });
+    }
+
+    function getGrade(score) {
+      if (score >= 85) return "A";
+      if (score >= 70) return "B";
+      return "C";
+    }
+
+    function getGradeClass(grade) {
+      if (grade === "A") return "grade-badge grade-a";
+      if (grade === "B") return "grade-badge grade-b";
+      return "grade-badge grade-c";
+    }
+
+    function getRiskClass(risk) {
+      if (risk === "Low") return "risk-badge risk-low";
+      if (risk === "Medium") return "risk-badge risk-medium";
+      return "risk-badge risk-high";
+    }
+
+    function getSummary(score, risk) {
+      if (risk === "Low") {
+        return "Strong learning signals with healthy attendance and academic consistency.";
+      }
+
+      if (risk === "Medium") {
+        return "Some indicators are positive, but there is room to improve consistency and engagement.";
+      }
+
+      return score < 30
+        ? "The model sees a high chance of underperformance. Early intervention is recommended."
+        : "The student profile signals risk and may need closer academic support.";
+    }
+
+    function getMotivation(score) {
+      if (score >= 85) {
+        return {
+          title: "Outstanding momentum.",
+          text: "Keep pushing. This profile reflects excellent habits and very strong academic potential."
+        };
+      }
+
+      if (score >= 60) {
+        return {
+          title: "Good foundation.",
+          text: "A few focused improvements can lift this student into an even stronger performance zone."
+        };
+      }
+
+      return {
+        title: "Support can change the story.",
+        text: "Small, consistent gains in attendance, assignments, and study time can create real improvement."
+      };
+    }
+
+    function updateProgress(score) {
+      const safeScore = Math.max(0, Math.min(100, Number(score)));
+      progressBar.style.width = safeScore + "%";
+      progressPercent.textContent = safeScore + "%";
+      ringValue.textContent = safeScore + "%";
+      progressRing.style.setProperty("--ring-fill", safeScore * 3.6 + "deg");
+    }
+
+    function createRipple(event, button) {
+      const rect = button.getBoundingClientRect();
+      const ripple = document.createElement("span");
+      const size = Math.max(rect.width, rect.height);
+
+      ripple.className = "ripple";
+      ripple.style.width = size + "px";
+      ripple.style.height = size + "px";
+      ripple.style.left = event.clientX - rect.left + "px";
+      ripple.style.top = event.clientY - rect.top + "px";
+
+      button.appendChild(ripple);
+      ripple.addEventListener("animationend", () => ripple.remove());
+    }
+
+    function playFeedbackTone() {
+      if (navigator.vibrate) {
+        navigator.vibrate(16);
+      }
+
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        return;
+      }
+
+      const audioContext = new AudioContextClass();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(280, audioContext.currentTime + 0.08);
+
+      gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.05, audioContext.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.14);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.14);
+
+      oscillator.onended = () => {
+        audioContext.close();
+      };
+    }
+
+    function setTheme(theme) {
+      const isLight = theme === "light";
+      document.body.classList.toggle("light", isLight);
+      document.body.classList.toggle("dark", !isLight);
+      themeLabel.textContent = isLight ? "Light mode" : "Dark mode";
+      themeToggle.querySelector("i").className = isLight ? "fa-solid fa-sun" : "fa-solid fa-moon";
+      localStorage.setItem("student-dashboard-theme", theme);
+    }
+
+    function setLoadingState(isLoading) {
+      predictButton.disabled = isLoading;
+      predictButton.classList.toggle("loading", isLoading);
+      resultCard.classList.toggle("loading", isLoading);
+      resultCard.classList.add("show");
+
+      if (isLoading) {
+        scoreValue.textContent = "...";
+        riskBadge.className = "risk-badge";
+        riskBadge.innerHTML = "<span>Risk</span><strong>Loading</strong>";
+        gradeBadge.className = "grade-badge";
+        gradeBadge.innerHTML = "<span>Grade</span><strong>--</strong>";
+        riskText.textContent = "Fetching prediction from the server";
+        statusText.textContent = "Please wait while the model evaluates the submitted student data.";
+        summaryText.textContent = "Preparing score, grade, and support guidance.";
+        motivationTitle.textContent = "Crunching the numbers.";
+        motivationText.textContent = "Generating the latest prediction with the current input mix.";
+        updateProgress(0);
+      }
+    }
+
+    function applyResult(score, risk) {
+      const grade = getGrade(score);
+      const motivation = getMotivation(score);
+
+      resultCard.classList.remove("loading");
+      resultCard.classList.add("show");
+      scoreValue.textContent = score.toFixed(2);
+      gradeBadge.className = getGradeClass(grade);
+      gradeBadge.innerHTML = "<span>Grade</span><strong>" + grade + "</strong>";
+      riskBadge.className = getRiskClass(risk);
+      riskBadge.innerHTML = "<span>Risk</span><strong>" + risk + "</strong>";
+      riskText.textContent = risk + " risk";
+      statusText.textContent = score >= 60
+        ? "This student is currently on a healthy performance track."
+        : "This student may need additional attention and support.";
+      summaryText.textContent = getSummary(score, risk);
+      motivationTitle.textContent = motivation.title;
+      motivationText.textContent = motivation.text;
+      updateProgress(score);
+      result.innerHTML = "Grade: " + score.toFixed(2) + "<br>Risk: " + risk;
+    }
+
+    function setErrorState() {
+      resultCard.classList.remove("loading");
+      resultCard.classList.add("show");
+      scoreValue.textContent = "--";
+      gradeBadge.className = "grade-badge grade-c";
+      gradeBadge.innerHTML = "<span>Grade</span><strong>--</strong>";
+      riskBadge.className = "risk-badge risk-high";
+      riskBadge.innerHTML = "<span>Risk</span><strong>Error</strong>";
+      riskText.textContent = "Prediction unavailable";
+      statusText.textContent = "Could not connect to the backend. Make sure the Flask server is running.";
+      summaryText.textContent = "The UI is ready, but the model endpoint did not respond successfully.";
+      motivationTitle.textContent = "Connection needed.";
+      motivationText.textContent = "Start the Flask server and try the prediction again.";
+      updateProgress(0);
+      result.textContent = "Prediction failed. Please try again.";
+    }
+
+    async function predict() {
+      const attendance = document.getElementById("attendance").value;
+      const study = document.getElementById("study").value;
+      const assign = document.getElementById("assign").value;
+      const lms = document.getElementById("lms").value;
+
+      setLoadingState(true);
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attendance, study, assign, lms })
+        });
+
+        if (!res.ok) {
+          throw new Error("Prediction request failed");
+        }
+
+        const data = await res.json();
+        const score = Math.max(0, Math.min(100, Number(data.score)));
+
+        applyResult(score, data.risk);
+      } catch (error) {
+        console.error(error);
+        setErrorState();
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    function resetInputs() {
+      sliderConfig.forEach((config) => {
+        const slider = document.getElementById(config.id);
+        const valueLabel = document.getElementById(config.valueId);
+        slider.value = config.defaultValue;
+        updateSliderVisual(slider, valueLabel, config, true);
+        localStorage.setItem(config.storageKey, config.defaultValue);
+      });
+
+      resultCard.classList.remove("loading");
+      resultCard.classList.add("show");
+      scoreValue.textContent = "--";
+      gradeBadge.className = "grade-badge";
+      gradeBadge.innerHTML = "<span>Grade</span><strong>--</strong>";
+      riskBadge.className = "risk-badge";
+      riskBadge.innerHTML = "<span>Risk</span><strong>Waiting</strong>";
+      riskText.textContent = "Not available yet";
+      statusText.textContent = "Inputs were reset. Run a new prediction to update the dashboard.";
+      summaryText.textContent = "Default student profile restored successfully.";
+      motivationTitle.textContent = "Fresh start ready.";
+      motivationText.textContent = "Try a new combination of inputs and generate another prediction.";
+      updateProgress(0);
+      result.textContent = "";
+    }
+
+    function setupSliders() {
+      loadSavedInputs();
+
+      sliderConfig.forEach((config) => {
+        const slider = document.getElementById(config.id);
+        const valueLabel = document.getElementById(config.valueId);
+
+        updateSliderVisual(slider, valueLabel, config, false);
+
+        slider.addEventListener("input", () => {
+          updateSliderVisual(slider, valueLabel, config, true);
+          saveInputs();
+        });
+      });
+    }
+
+    function setupTilt() {
+      document.querySelectorAll(".tilt-card").forEach((card) => {
+        card.addEventListener("mousemove", (event) => {
+          if (window.innerWidth < 980) {
+            return;
+          }
+
+          const rect = card.getBoundingClientRect();
+          const offsetX = event.clientX - rect.left;
+          const offsetY = event.clientY - rect.top;
+          const rotateY = ((offsetX / rect.width) - 0.5) * 6;
+          const rotateX = ((offsetY / rect.height) - 0.5) * -6;
+
+          card.style.transform = "perspective(1200px) rotateX(" + rotateX + "deg) rotateY(" + rotateY + "deg)";
+        });
+
+        card.addEventListener("mouseleave", () => {
+          card.style.transform = "perspective(1200px) rotateX(0deg) rotateY(0deg)";
+        });
+      });
+    }
+
+    function setupButtons() {
+      [predictButton, resetButton].forEach((button) => {
+        button.addEventListener("click", (event) => {
+          createRipple(event, button);
+          playFeedbackTone();
+        });
+      });
+
+      resetButton.addEventListener("click", resetInputs);
+    }
+
+    const savedTheme = localStorage.getItem("student-dashboard-theme") || "dark";
+    setTheme(savedTheme);
+    themeToggle.addEventListener("click", () => {
+      const nextTheme = document.body.classList.contains("light") ? "dark" : "light";
+      setTheme(nextTheme);
+    });
+
+    setupSliders();
+    setupButtons();
+    setupTilt();
+    updateProgress(0);
+  </script>
+</body>
+</html>
