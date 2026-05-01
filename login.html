@@ -799,7 +799,7 @@
           <p>Access your dashboard and keep your performance journey moving forward.</p>
         </div>
 
-        <form id="loginForm" novalidate>
+        <form action="/login" method="POST" id="loginForm">
           <div class="field-grid">
             <div class="field-group">
               <label class="field-label" for="email">
@@ -856,7 +856,7 @@
 
         <div class="login-footer">
           <span>No backend required for this screen.</span>
-          <a href="index.html">Open dashboard directly</a>
+          <a href="/dashboard">Open dashboard</a>
         </div>
       </section>
     </main>
@@ -948,7 +948,7 @@
     }
 
     function redirectToDashboard() {
-      window.location.href = "index.html";
+      window.location.href = "/dashboard";
     }
 
     function handleTilt(card, event) {
@@ -1055,7 +1055,6 @@
         passwordError.textContent = "";
       }
     });
-
     loginForm.addEventListener("submit", handleLogin);
 
     initializeTheme();
